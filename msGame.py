@@ -1,9 +1,7 @@
 import random, time, copy
 
-#Sets up the game.
 def reset():
 
-    #The solution grid.
     b = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     for n in range (0, 10):
@@ -15,36 +13,29 @@ def reset():
             if value == '*':
                 updateValues(r, c, b)
 
-    #Sets the variable k to a grid of blank spaces, because nothing is yet known about the grid.
     k = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
 
     printBoard(k)
 
-    #Start timer
     startTime = time.time()
 
-    #The game begins!
     play(b, k, startTime)
 
-#Gets the value of a coordinate on the grid.
 def l(r, c, b):
     return b[r][c]
 
-#Places a bomb in a random location.
 def placeBomb(b):
     r = random.randint(0, 8)
     c = random.randint(0, 8)
-    #Checks if there's a bomb in the randomly generated location. If not, it puts one there. If there is, it requests a new location to try.
+
     currentRow = b[r]
     if not currentRow[c] == '*':
         currentRow[c] = '*'
     else:
         placeBomb(b)
 
-#Adds 1 to all of the squares around a bomb.
 def updateValues(rn, c, b):
 
-    #Row above.
     if rn-1 > -1:
         r = b[rn-1]
         
@@ -59,7 +50,6 @@ def updateValues(rn, c, b):
             if not r[c+1] == '*':
                 r[c+1] += 1
 
-    #Same row.    
     r = b[rn]
 
     if c-1 > -1:
@@ -70,7 +60,6 @@ def updateValues(rn, c, b):
         if not r[c+1] == '*':
             r[c+1] += 1
 
-    #Row below.
     if 9 > rn+1:
         r = b[rn+1]
 
@@ -85,29 +74,24 @@ def updateValues(rn, c, b):
             if not r[c+1] == '*':
                 r[c+1] += 1
 
-#When a zero is found, all the squares around it are opened.
 def zeroProcedure(r, c, k, b):
 
-    #Row above
     if r-1 > -1:
         row = k[r-1]
         if c-1 > -1: row[c-1] = l(r-1, c-1, b)
         row[c] = l(r-1, c, b)
         if 9 > c+1: row[c+1] = l(r-1, c+1, b)
 
-    #Same row
     row = k[r]
     if c-1 > -1: row[c-1] = l(r, c-1, b)
     if 9 > c+1: row[c+1] = l(r, c+1, b)
 
-    #Row below
     if 9 > r+1:
         row = k[r+1]
         if c-1 > -1: row[c-1] = l(r+1, c-1, b)
         row[c] = l(r+1, c, b)
         if 9 > c+1: row[c+1] = l(r+1, c+1, b)
 
-#Checks known grid for 0s.
 def checkZeros(k, b, r, c):
     oldGrid = copy.deepcopy(k)
     zeroProcedure(r, c, k, b)
@@ -122,12 +106,10 @@ def checkZeros(k, b, r, c):
         if oldGrid == k:
             return
 
-#Places a marker in the given location.
 def marker(r, c, k):
     k[r][c] = '⚐'
     printBoard(k)
 
-#Prints the given board.
 def printBoard(b):
     for i in range(40):
         print()
@@ -141,15 +123,14 @@ def printBoard(b):
     for i in range(2):
         print()
 
-#The player chooses a location.
 def choose(b, k, startTime):
-    #Variables 'n stuff.
+
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' ,'i']
     numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8']
-    #Loop in case of invalid entry.
+
     while True:
         chosen = input('Choose a square (eg. E4) or place a marker (eg. mE4): ').lower()
-        #Checks for valid square.
+
         if len(chosen) == 3 and chosen[0] == 'm' and chosen[1] in letters and chosen[2] in numbers:
             c, r = (ord(chosen[1]))-97, int(chosen[2])
             marker(r, c, k)
@@ -158,20 +139,16 @@ def choose(b, k, startTime):
         elif len(chosen) == 2 and chosen[0] in letters and chosen[1] in numbers: return (ord(chosen[0]))-97, int(chosen[1])
         else: choose(b, k, startTime)    
 
-
-#The majority of the gameplay happens here.
 def play(b, k, startTime):
-    #Player chooses square.
+
     c, r = choose(b, k, startTime)
-    #Gets the value at that location.
+
     v = l(r, c, b)
-    #If you hit a bomb, it ends the game.
+
     if v == '*':
         printBoard(b)
         print('You Lose!')
-        #Print timer result.
         print('Time: ' + str(round(time.time() - startTime)) + 's')
-        #Offer to play again.
         playAgain = input('Play again? (Y/N): ').lower()
         if playAgain == 'y':
             for i in range(40):
@@ -179,13 +156,10 @@ def play(b, k, startTime):
             reset()
         else:
             quit()
-    #Puts that value into the known grid (k).
     k[r][c] = v
-    #Runs checkZeros() if that value is a 0.
     if v == 0:
         checkZeros(k, b, r, c)
     printBoard(k)
-    #Checks to see if you have won.
     squaresLeft = 0
     for x in range (0, 9):
         row = k[x]
@@ -194,9 +168,7 @@ def play(b, k, startTime):
     if squaresLeft == 10:
         printBoard(b)
         print('You win!')
-        #Print timer result.
         print('Time: ' + str(round(time.time() - startTime)) + 's')
-        #Offer to play again.
         playAgain = input('Play again? (Y/N): ')
         playAgain = playAgain.lower()
         if playAgain == 'y':
@@ -205,7 +177,6 @@ def play(b, k, startTime):
             reset()
         else:
             quit()
-    #Repeats!
     play(b, k, startTime)
 
 reset()
